@@ -4,6 +4,7 @@ import math
     to solve the descreet logarithm problem.
     values to test with generator = 5, modolo = 167, answer = 49 -> the expected solution is 70
     49 = 5 ^ 70 mod 167
+    test
 '''
 
 def calculate_descreet_power(num: int, exp: int, mod:int) -> int:
