@@ -35,24 +35,30 @@ def calculate_descreet_log(ans: int, generator: int, modulo: int, Q: int) -> int
 
     # calculation of the baby step list:
     baby_step_dic = {}
-    step = ans % modulo  # calculating step 0
-    baby_step_dic[step] = 0
+    # step = ans % modulo  # calculating step 0
+    step = 1
+    baby_step_dic[ans] = 0
 
     # populating the baby_step_dic
     for i in range(1, Q):
         step = step * generator % modulo
-        baby_step_dic[step] = i
+        baby_step_dic[(step * ans % modulo)] = i
 
+    
     # calculate the giant step list
-    step = calculate_discrete_power(generator, Q, modulo)  # calculating step 0
-    step0 = step
+    #
+    # the last value for step after the for loop populating the baby_step_dic is generator ^ (Q-1).
+    # the first value of the giant step list is generator ^ Q so we can easely derive the first value of the
+    # giant list from the last value of step.
+    step = (step * generator) % modulo  # calculating step 0
+    step_0 = step
     solution = -1  # if no solution is found -1 returned
 
     if step in baby_step_dic:
         solution = 1*Q-baby_step_dic[step]
     else:
         for i in range(2, Q+1):
-            step = step * step0 % modulo
+            step = step * step_0 % modulo
             if step in baby_step_dic:
                 solution = i*Q-baby_step_dic[step]
                 break
