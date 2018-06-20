@@ -1,7 +1,26 @@
 '''
     This is an implementation of the Babystep - Giantstep algorithm in order 
-    to solve the descreet logarithm problem.
+    to solve the descreet logarithm problem. As described in Section 2.1 "The Classical Baby-Step Giant-Step Algorithm"
+    In: https://www.ssi.gouv.fr/archive/fr/sciences/fichiers/lcr/colepo05.pdf
 '''
+
+# calculates gratest comen divisor Sourced from:
+# https://en.wikibooks.org/wiki/Algorithm_Implementation/Mathematics/Extended_Euclidean_algorithm
+def egcd(a, b):
+    if a == 0:
+        return (b, 0, 1)
+    else:
+        g, y, x = egcd(b % a, a)
+        return (g, x - (b // a) * y, y)
+
+# calculates the modular inverse. Sourced from:
+# https://en.wikibooks.org/wiki/Algorithm_Implementation/Mathematics/Extended_Euclidean_algorithm
+def modinv(a, m):
+    g, x, y = egcd(a, m)
+    if g != 1:
+        raise Exception('modular inverse does not exist')
+    else:
+        return x % m
 
 
 def calculate_discrete_power(num: int, exp: int, mod: int) -> int:
@@ -35,14 +54,13 @@ def calculate_descreet_log(ans: int, generator: int, modulo: int, Q: int) -> int
 
     # calculation of the baby step list:
     baby_step_dic = {}
-    # step = ans % modulo  # calculating step 0
     step = 1
-    baby_step_dic[ans] = 0
 
+    
     # populating the baby_step_dic
-    for i in range(1, Q):
+    for i in range(0, Q):
+        baby_step_dic[(step % modulo)] = i
         step = step * generator % modulo
-        baby_step_dic[(step * ans % modulo)] = i
 
     
     # calculate the giant step list
@@ -50,30 +68,33 @@ def calculate_descreet_log(ans: int, generator: int, modulo: int, Q: int) -> int
     # the last value for step after the for loop populating the baby_step_dic is generator ^ (Q-1).
     # the first value of the giant step list is generator ^ Q so we can easely derive the first value of the
     # giant list from the last value of step.
-    step = (step * generator) % modulo  # calculating step 0
-    step_0 = step
+ 
     solution = -1  # if no solution is found -1 returned
 
-    if step in baby_step_dic:
-        solution = 1*Q-baby_step_dic[step]
-    else:
-        for i in range(2, Q+1):
-            step = step * step_0 % modulo
-            if step in baby_step_dic:
-                solution = i*Q-baby_step_dic[step]
-                break
+    # calculate mod inverse of step
+    inw_step = modinv(step, modulo)
+    step = ans
+
+    for i in range(0, Q+1):
+        if step in baby_step_dic:
+                        solution = (i*Q + baby_step_dic[step]) % modulo
+                        break
+        step = (step * inw_step) % modulo
+            
 
     return solution
 
-
+import math
 if __name__ == '__main__':
     # Setup of the variables in the form of:
     # ans = generator ^ exponent % modulo
     generator = 439
     modulo = 104729
-    exponent = 23425
+    exponent = 23427
     ans = calculate_discrete_power(generator, exponent, modulo)
-    Q = 100000  # limit to prevent from calculation not termenating within usefull time.
+    Q = 10000 # limit to prevent from calculation not termenating within usefull time.
+    if(Q > math.ceil(math.sqrt(modulo))): # if the Q is biger than sqrt(modulo) rounded up, the program doesn't work properly
+        Q = math.ceil(math.sqrt(modulo))  
 
     ex = calculate_descreet_log(ans, generator, modulo, Q)
     print('The exponent which was used was: {}\nThis answer is: {}'.format(
